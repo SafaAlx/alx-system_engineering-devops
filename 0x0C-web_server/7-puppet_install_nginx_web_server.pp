@@ -1,40 +1,23 @@
-#!/usr/bin/env bash
-# Configure server using puppet
-
-# defines a Puppet class called nginx_server that 
-#  encapsulates the configuration for the Nginx server.
-class nginx_server {
-  package { 'nginx':
-    ensure => installed,
-  }
-
-#  manages the Nginx service.
-  service { 'nginx':
-    ensure => running,
-    enable => true,
-    require => Package['nginx'],
-  }
-# manages the Nginx configuration file located at /etc/nginx/sites-available/default.
-  file { '/etc/nginx/sites-available/default':
-    ensure  => present,
-    content => "
-      server {
-        listen      80 default_server;
-        listen      [::]:80 default_server;
-        root        /var/www/html;
-        index       index.html index.htm;
-
-        location / {
-          return 200 'Hello World!';
-        }
-
-        location /redirect_me {
-          return 301 http://cuberule.com/;
-        }
-      }
-    ",
-    notify => Service['nginx'],
-  }
+# Install nginx with puppet
+package { 'nginx':
+  ensure   => '1.18.0',
+  provider => 'apt',
 }
-#  includes the nginx_server class, ensuring that it gets applied.
-include nginx_server
+
+file { 'Hello World':
+  path    => '/var/www/html/index.nginx-debian.html',
+  content => 'Hello World',
+}
+
+file_line { 'Hello World':
+  path  => '/etc/nginx/sites-available/default',
+  after => 'server_name _;',
+  line  => '\trewrite ^/redirect_me https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;',
+}
+
+exec { 'service':
+  command  => 'service nginx start',
+  provider => 'shell',
+  user     => 'root',
+  path     => '/usr/sbin/service',
+}
