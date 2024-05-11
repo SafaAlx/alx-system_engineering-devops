@@ -17,8 +17,8 @@ def number_of_subscribers(subreddit):
             return data['data']['subscribers']
         else:
             return 0
-    else:
-        return 0
+        else:
+            return 0
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
